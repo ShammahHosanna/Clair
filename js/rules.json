@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "note": "Expressions et formats à calibrer sur de vrais SMS collectés sur le terrain. Ne pas supposer un format.",
+  "hardRules": {
+    "transactionIdPattern": "(?:trans(?:action)?[a-z ]*id|ref(?:erence)?)[a-z .:#]*([A-Z0-9]{6,20})",
+    "amountPattern": "(?:montant|amount|somme|received|reçu|transferred|you (?:have )?received)[' :]*\\s*(?:de |of )?((?:\\d[\\d,,. \\u00a0]{1,11}))\\s*(?:f[cel]{2,3}a?r?s?|xof|xaf)?",
+    "timePattern": "(?:\\d{1,2})[:h](\\d{2})",
+    "freshWindowMinutes": 10
+  },
+  "trapWords": {
+    "fr": ["erreur", "renvoyez", "renvoyer", "retournez", "urgent", "rapidement", "vite", "annule", "remboursez", "rembours", "code", "envoyez", "frais", "commission"],
+    "en": [".error", "return", "resend", "urgent", "quickly", "hurry", "refund", "cancel", "code", "fee"],
+    "pcm": ["mistake", "return", "send back", "quick", "wahala", "refund"]
+  },
+  "operators": {
+    "fr_generic": ["mtn", "orange", "camtel", "blue"],
+    "en_generic": ["mtn", "orange", "camtel", "blue"]
+  },
+  "anomalies": {
+    "doubleCurrency": "(?:fcfa?\\s*fcfa|f\\s*c\\s*f\\s*a\\s*\\d)",
+    "commaDecimal": "\\d+,\\d{1,2}(?:\\s*fcf)",
+    "missingSpace ": "\\d\\u00a0?fcfa"
+  }
+}

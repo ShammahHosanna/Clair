@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#12296B">
+  <meta name="description" content="Clair — Sachez avant de remettre la marchandise. Vérifiez la cohérence d'un SMS de paiement Mobile Money en 3 secondes.">
+  <title>Clair — Sachez avant de remettre la marchandise</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Aller au contenu</a>
+
+  <!-- ============ En-tête ============ -->
+  <header class="app-header">
+    <div class="container top-bar">
+      <a href="#home" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 12.5l4 4.2L18 7.5" stroke="#FFFBF2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Clair
+    </a>
+      <div class="row">
+        <button id="btn-lang" class="lang-btn" type="button" aria-label="Changer de langue">FR</button>
+        <a href="#settings" class="icon-btn" aria-label="Réglages">⚙</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+
+    <!-- ============ S1 : Accueil ============ -->
+    <section id="home" class="screen" aria-labelledby="home-title">
+      <h1 id="home-title" data-i18n="home-title">Bonjour. Un paiement à vérifier ?</h1>
+
+      <a href="#input" class="btn btn-gold mb-4" data-i18n="check-payment">Vérifier un paiement</a>
+
+      <div class="card">
+        <h2 data-i18n="refund-h">Un client demande de rembourser ?</h2>
+        <p class="muted" data-i18n="refund-p">Ne renvoyez rien avant d'avoir vérifié votre solde.</p>
+        <a href="#refund" class="btn btn-secondary" data-i18n="what-to-do">Que faire ?</a>
+      </div>
+
+      <h2 class="mt-4" data-i18n="recent">Dernières vérifications</h2>
+      <ul id="home-history" class="full" aria-live="polite"></ul>
+      <p id="home-history-empty" class="muted" hidden data-i18n="no-history">Aucune vérification pour l'instant.</p>
+
+      <a href="#jury" class="btn btn-secondary mt-4" data-i18n="jury-mode">Mode jury (démo)</a>
+    </section>
+
+    <!-- ============ S2 : Saisie ============ -->
+    <section id="input" class="screen" aria-labelledby="input-title">
+      <h1 id="input-title" data-i18n="input-title">Vérifier un paiement</h1>
+
+      <div class="field">
+        <label for="amount"><span data-i18n="amount-label">Montant attendu (FCFA)</span></label>
+        <input class="input" id="amount" name="amount" type="text" inputmode="numeric"
+               autocomplete="off" aria-describedby="amount-help">
+        <span id="amount-help" class="hint muted" data-i18n="amount-help">Ce que le client doit payer.</span>
+      </div>
+
+      <div class="field">
+        <div class="chip-group" role="radiogroup" aria-label="Montants rapides" id="quick-amounts"></div>
+      </div>
+
+      <div class="field" id="sms-field">
+        <label for="sms"><span data-i18n="sms-label">Collez le SMS reçu</span></label>
+        <textarea class="textarea" id="sms" name="sms" rows="4" aria-describedby="sms-error sms-count"></textarea>
+        <p id="sms-error" class="field-error" hidden></p>
+        <p id="sms-count" class="char-count" aria-hidden="true">0</p>
+        <button type="button" id="btn-paste" class="btn btn-secondary" data-i18n="paste">Coller depuis le téléphone</button>
+      </div>
+
+      <fieldset class="field" style="border:none;padding:0;margin:0 0 1.5rem;">
+        <legend style="font-weight:600;margin-bottom:0.5rem;" data-i18n="sender-q">Le SMS vient du nom de l'opérateur ?</legend>
+        <div class="segmented" id="sender-choices">
+          <label><input type="radio" name="sender" value="yes"><span data-i18n="yes">Oui</span></label>
+          <label><input type="radio" name="sender" value="no"><span data-i18n="no">Non</span></label>
+          <label><input type="radio" name="sender" value="unknown"><span data-i18n="unknown">Je ne sais pas</span></label>
+        </div>
+      </fieldset>
+
+      <button type="button" id="btn-analyze" class="btn btn-primary" data-i18n="analyze">Analyser</button>
+      <p class="muted center mt-2" data-i18n="privacy-note">Vos données restent sur ce téléphone.</p>
+    </section>
+
+    <!-- ============ Analyse (roue de confiance) ============ -->
+    <section id="analyzing" class="screen" aria-labelledby="analyzing-title">
+      <div class="analyzing" role="status" aria-live="polite">
+        <div class="rule-wheel">
+          <svg class="wheel" viewBox="0 0 200 200" aria-hidden="true" id="wheel-svg"></svg>
+          <ul class="rule-status" id="rule-status"></ul>
+        </div>
+        <h1 id="analyzing-title" tabindex="-1" data-i18n="analyzing">Clair compare le message…</h1>
+      </div>
+    </section>
+
+    <!-- ============ S3 : Verdict ============ -->
+    <section id="verdict" class="screen" aria-labelledby="verdict-title">
+      <div class="verdict-hero" id="verdict-hero">
+        <svg class="shape" id="verdict-shape" viewBox="0 0 120 120" aria-hidden="true"></svg>
+        <h1 class="word" id="verdict-title" tabindex="-1" data-i18n="v-consistent">COHÉRENT</h1>
+        <p class="sentence" id="verdict-sentence" data-i18n="v-consistent-s"></p>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" id="btn-speak" class="btn btn-secondary" data-i18n="listen">🔊 Écouter</button>
+        <button type="button" id="btn-why" class="btn btn-secondary" aria-haspopup="dialog" data-i18n="why">Pourquoi ce verdict ?</button>
+      </div>
+
+      <ul id="verdict-reasons" class="mt-4"></ul>
+
+      <button type="button" id="btn-proof" class="btn btn-primary mt-4" data-i18n="next-proof">Dernière étape : mon solde</button>
+
+      <div id="sheet-backdrop" class="sheet-backdrop"></div>
+      <div id="why-sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="why-title" hidden>
+        <h2 id="why-title" data-i18n="why">Pourquoi ce verdict ?</h2>
+        <ul id="why-reasons"></ul>
+        <button type="button" id="sheet-close" class="btn btn-secondary">Fermer</button>
+      </div>
+    </section>
+
+    <!-- ============ S4 : Preuve finale ============ -->
+    <section id="proof" class="screen" aria-labelledby="proof-title">
+      <h1 id="proof-title" tabindex="-1" data-i18n="proof-title">Preuve finale : votre solde</h1>
+      <p data-i18n="proof-p">Le message peut être faux. La seule preuve fiable est votre solde.</p>
+      <div class="card center">
+        <svg viewBox="0 0 200 120" class="wheel" style="width:100%;max-width:16rem;height:auto;" aria-hidden="true" id="balance-svg"></svg>
+        <p id="proof-amount-line" data-i18n="proof-line">Vérifiez que votre solde a augmenté de {amount} FCFA.</p>
+      </div>
+      <div class="btn-row split">
+        <button type="button" id="btn-balance-ok" class="btn btn-primary" data-i18n="balance-ok">Mon solde a augmenté</button>
+        <button type="button" id="btn-balance-no" class="btn btn-danger" data-i18n="balance-no">Je ne vois rien</button>
+      </div>
+    </section>
+
+    <!-- ============ Clôture ============ -->
+    <section id="closed" class="screen" aria-labelledby="closed-title">
+      <div class="verdict-hero" id="closed-hero">
+        <svg class="shape" id="closed-shape" viewBox="0 0 120 120" aria-hidden="true"></svg>
+        <h1 class="word" id="closed-title">—</h1>
+        <p class="sentence" id="closed-sentence">—</p>
+      </div>
+      <a href="#home" class="btn btn-primary" data-i18n="back-home">Retour à l'accueil</a>
+    </section>
+
+    <!-- ============ S5 : Historique ============ -->
+    <section id="history" class="screen" aria-labelledby="history-title">
+      <h1 id="history-title" data-i18n="history-title">Historique</h1>
+      <ul id="history-list"></ul>
+      <p id="history-empty" class="muted" hidden data-i18n="no-history">Aucune vérification pour l'instant.</p>
+      <button type="button" id="btn-clear-data" class="btn btn-danger mt-4" data-i18n="clear-data">Effacer mes données</button>
+    </section>
+
+    <!-- ============ S6 : Conseils arnaques ============ -->
+    <section id="tips" class="screen" aria-labelledby="tips-title">
+      <h1 id="tips-title" data-i18n="tips-title">5 arnaques courantes</h1>
+      <div id="tips-list"></div>
+    </section>
+
+    <!-- ============ Remboursement demandé ============ -->
+    <section id="refund" class="screen" aria-labelledby="refund-title">
+      <h1 id="refund-title" data-i18n="refund-title">Un client me demande de rembourser</h1>
+      <div class="verdict-hero warn">
+        <h1 class="word" style="font-size:1.5rem;" data-i18n="refund-alert">Arrêtez. Ne renvoyez rien.</h1>
+        <p class="sentence" data-i18n="refund-alert-p">Un SMS peut être faux ou être une capture retouchée. Vérifiez votre solde d'abord.</p>
+      </div>
+      <ol>
+        <li data-i18n="refund-step1">Vérifiez que votre solde a réellement changé.</li>
+        <li data-i18n="refund-step2">Appelez votre opérateur sur son numéro officiel, pas un numéro reçu au téléphone.</li>
+        <li data-i18n="refund-step3">Ne cédez pas à l'urgence : aucune vraie erreur ne disparaît en 10 minutes.</li>
+      </ol>
+      <a href="#home" class="btn btn-primary mt-4" data-i18n="back-home">Retour à l'accueil</a>
+    </section>
+
+    <!-- ============ S7 : Réglages ============ -->
+    <section id="settings" class="screen" aria-labelledby="settings-title">
+      <h1 id="settings-title" data-i18n="settings-title">Réglages</h1>
+
+      <div class="card">
+        <h2 data-i18n="lang-h">Langue</h2>
+        <div class="chip-group" role="radiogroup" aria-labelledby="lang-h">
+          <button type="button" class="chip" data-set-lang="fr" id="chip-fr">Français</button>
+          <button type="button" class="chip" data-set-lang="en" id="chip-en">English</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="display-h">Affichage</h2>
+        <button type="button" role="switch" aria-checked="false" id="sw-sun" class="switch">
+          <span data-i18n="sun-label">Mode soleil (fort contraste)</span>
+          <span class="track"><span class="knob"></span></span>
+          <span class="visually-hidden state"></span>
+        </button>
+
+        <fieldset class="field" style="border:none;padding:0;margin:0;">
+          <legend style="font-weight:600;margin-bottom:0.5rem;" data-i18n="text-size">Taille du texte</legend>
+          <div class="chip-group" role="radiogroup" aria-labelledby="text-size-leg" id="size-chips">
+            <button type="button" class="chip" data-set-scale="normal" id="chip-s-normal" aria-checked="true">A</button>
+            <button type="button" class="chip" data-set-scale="lg" id="chip-s-lg" aria-checked="false">A+</button>
+            <button type="button" class="chip" data-set-scale="xl" id="chip-s-xl" aria-checked="false">A++</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="senses-h">Voix et vibration</h2>
+        <button type="button" role="switch" aria-checked="true" id="sw-voice" class="switch">
+          <span data-i18n="voice-label">Lecture vocale du verdict : activée</span>
+          <span class="track"><span class="knob"></span></span>
+        </button>
+        <button type="button" role="switch" aria-checked="true" id="sw-vibrate" class="switch">
+          <span data-i18n="vibrate-label">Vibration : activée</span>
+          <span class="track"><span class="knob"></span></span>
+        </button>
+      </div>
+
+      <div class="card">
+        <h2><a href="#a11y" data-i18n="a11y-h">Accessibilité et limites</a></h2>
+        <p class="muted" data-i18n="a11y-p">Mesures appliquées et limites connues de Clair.</p>
+      </div>
+    </section>
+
+    <!-- ============ Page Accessibilité ============ -->
+    <section id="a11y" class="screen" aria-labelledby="a11y-page-title">
+      <h1 id="a11y-page-title" data-i18n="a11y-page-h">Accessibilité</h1>
+      <div class="card">
+        <h2 data-i18n="a11y-measures">Mesures appliquées</h2>
+        <ul id="a11y-list">
+          <li data-i18n="a11y-m1">Verdict en 4 canaux : forme, mot, couleur, voix et vibration.</li>
+          <li data-i18n="a11y-m2">Cibles tactiles de 48 à 72 px, espacement 12 px minimum.</li>
+          <li data-i18n="a11y-m3">Contrastes AA vérifiés (texte ≥ 4,5:1, composants ≥ 3:1). Mode soleil pour niveau renforcé.</li>
+          <li data-i18n="a11y-m4">Navigation au clavier complète, focus visible contour or.</li>
+          <li data-i18n="a11y-m5">Textes agrandissables (A / A+ / A++), unités relatives, reflow à 320 px.</li>
+          <li data-i18n="a11y-m6">Nous utilisons vous (vouvoiement chaleureux) ; lang déclarée sur chaque écran.</li>
+          <li data-i18n="a11y-m7">Aucun traitement cognitif pour utiliser l'app : sans compte, sans mot de passe.</li>
+          <li data-i18n="a11y-m8">Mouvements réduits respectés (prefers-reduced-motion).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2 data-i18n="a11y-p">Limites connues</h2>
+        <ul>
+          <li data-i18n="a11y-l1">Clair ne peut pas confirmer un paiement réellement reçu : elle détecte des incohérences.</li>
+          <li data-i18n="a11y-l2">La voix Pidgin n'est pas native : le Pidgin est lu par une voix anglaise.</li>
+          <li data-i18n="a11y-l3">La disponibilité de la synthèse vocale dépend du téléphone.</li>
+        </ul>
+      </div>
+      <a href="#settings" class="btn btn-secondary" data-i18n="back">Retour</a>
+    </section>
+
+    <!-- ============ S8 : Mode jury ============ -->
+    <section id="jury" class="screen" aria-labelledby="jury-title">
+      <h1 id="jury-title" data-i18n="jury-title">Mode jury</h1>
+      <p data-i18n="jury-guide">3 scénarios prêts en 30 secondes. Les SMS sont fictifs, indiqués « Exemple de démonstration ».</p>
+      <div class="card">
+        <h2>1. <span data-i18n="jury-s1">SMS cohérent</span></h2>
+        <p class="muted" data-i18n="jury-s1d">Montant identique, expéditeur reconnu, heure récente → COHÉRENT puis preuve finale.</p>
+        <button type="button" class="btn btn-primary" data-scenario="1" data-i18n="run">Lancer</button>
+      </div>
+      <div class="card">
+        <h2>2. <span data-i18n="jury-s2">SMS falsifié</span></h2>
+        <p class="muted" data-i18n="jury-s2d">Montant différent et mot d'urgence → DANGER.</p>
+        <button type="button" class="btn btn-primary" data-scenario="2" data-i18n="run">Lancer</button>
+      </div>
+      <div class="card">
+        <h2>3. <span data-i18n="jury-s3">Doublon</span></h2>
+        <p class="muted" data-i18n="jury-s3d">Rejoue l'identifiant du scénario 1, déjà vérifié → DANGER.</p>
+        <button type="button" class="btn btn-primary" data-scenario="3" data-i18n="run">Lancer</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ Navigation basse ============ -->
+  <div class="bottom-nav-wrap">
+  <nav class="bottom-nav" aria-label="Navigation principale">
+    <a href="#home" data-nav="home">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 9v11h14V9"/></svg>
+      <span data-i18n="nav-home">Accueil</span>
+    </a>
+    <a href="#history" data-nav="history">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span data-i18n="nav-history">Historique</span>
+    </a>
+    <a href="#tips" data-nav="tips">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l9 18H3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      <span data-i18n="nav-tips">Conseils</span>
+    </a>
+  </nav>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

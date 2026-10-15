@@ -1,0 +1,81 @@
+/* ============================================================
+   Clair — base.css : reset, typographie, focus, reflow
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-padding-top: 5rem; /* barre de navigation fixe */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+  line-height: var(--lh);
+  color: var(--clair-ink);
+  background: var(--clair-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-title);
+  line-height: 1.25;
+  margin: 0 0 var(--sp-3);
+}
+
+h1 { font-size: var(--size-h1); }
+h2 { font-size: 1.375rem; }
+h3 { font-size: 1.125rem; }
+
+p { margin: 0 0 var(--sp-3); }
+
+a { color: var(--clair-primary); text-underline-offset: 0.15em; }
+
+/* Focus visible : contour 3 px or + 2 px bleu nuit (WCAG 2.4.11) */
+:focus-visible {
+  outline: 3px solid var(--clair-gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--clair-primary);
+  border-radius: 4px;
+}
+
+/* Lien d'évitement */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--clair-primary);
+  color: #fff;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: 0 0 var(--radius-btn) 0;
+  z-index: 100;
+}
+.skip-link:focus { left: 0; }
+
+/* Texte secondaire */
+.muted { color: var(--clair-ink-soft); font-size: var(--size-secondary); }
+
+/* Titre d'écran : le focus est posé programmatiquement pour annoncer l'écran
+   aux lecteurs d'écran ; aucun contour visuel n'est souhaité sur un titre.
+   Le contour or reste réservé aux éléments réellement navigables au clavier. */
+h1:focus { outline: none; box-shadow: none; }
+
+/* Zoom 400 % et reflow 320 px : aucune largeur fixe,
+   les mises en page passent en colonne au-dessous de 360 px. */
+@media (max-width: 359px) {
+  .row { flex-direction: column; }
+  .row > * { width: 100%; }
+}
+
+/* Espacement du texte (WCAG 1.4.12) : les hauteurs ne sont jamais figées en px durs. */
+
+/* Réduction de mouvement (prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

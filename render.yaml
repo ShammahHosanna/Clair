@@ -1,0 +1,11 @@
+# Clair Desktop — configuration Render
+# Runtime Python natif : pas de Docker nécessaire.
+# Prérequis : desktop/frontend/dist/ doit être présent dans le dépôt git
+# (build Vite déjà fait et commité), le backend le sert directement.
+services:
+  - type: web
+    name: clair-desktop
+    runtime: python
+    buildCommand: pip install -r desktop/backend/requirements.txt
+    startCommand: cd desktop/backend && gunicorn 'app:create_app()' --workers 2 --threads 4 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health

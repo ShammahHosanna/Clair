@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "note": "Formats et mots-pièges à calibrer sur de vrais SMS collectés sur le terrain (annexe A du cahier des charges).",
+  "hardRules": {
+    "freshWindowMinutes": 10
+  },
+  "trapWords": {
+    "fr": ["erreur", "renvoyez", "renvoyer", "retournez", "urgent", "rapidement", "vite", "annule", "remboursez", "rembours", "code", "envoyez", "frais", "commission"],
+    "en": ["error", "return", "resend", "urgent", "quickly", "hurry", "refund", "cancel", "code", "fee"],
+    "pcm": ["mistake", "return", "send back", "quick", "wahala", "refund"]
+  }
+}
